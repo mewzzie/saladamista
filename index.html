@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Salada Mista - Jogo da Memória</title>
+    <style>
+        /* Resetando os estilos padrões para garantir que não haja espaçamento indesejado */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box; /* Isso ajuda a controlar o tamanho dos elementos */
+        }
+
+        .logo {
+            max-width: 150px;
+            margin-bottom: 20px;
+        }
+
+        /* Estilos para o corpo da página */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* Fonte moderna e legível */
+            background: linear-gradient(to bottom, #ebac93, #f7f7f7); /* Cor de fundo */
+            color: #333; /* Cor de texto escura para boa leitura */
+            text-align: center; /* Centraliza o conteúdo */
+            padding: 20px; /* Espaçamento interno */
+        }
+
+        /* Estilo para o título principal */
+        h1 {
+            font-size: 3rem; /* Tamanho grande para o título */
+            margin-bottom: 5px; /* Espaço abaixo do título */
+            color: #333; /* Cor escura para o título */
+            letter-spacing: 2px; /* Espaçamento entre as letras para um efeito mais estiloso */
+        }
+
+        /* Estilo para o subtítulo */
+        h2 {
+            font-size: 1.5rem; /* Tamanho grande para o subtítulo */
+            margin-bottom: 20px; /* Espaço abaixo do subtítulo */
+            color: #333; /* Cor escura para o subtítulo */
+            letter-spacing: 2px; /* Espaçamento entre as letras para um efeito mais estiloso */
+        }
+
+        /* Estilo para as estatísticas (tempo e movimentos) */
+        .stats {
+            margin-bottom: 30px; /* Espaço abaixo das estatísticas */
+            font-size: 1.2rem; /* Tamanho de texto confortável para as estatísticas */
+            color: #444; /* Cor de texto para as estatísticas */
+        }
+
+        .stats p {
+            margin: 10px 0; /* Espaçamento entre as estatísticas */
+        }
+
+        /* Estilos para o tabuleiro do jogo */
+        .game-board {
+            display: grid; /* Usando grid para organizar os cards em linhas e colunas */
+            grid-template-columns: repeat(4, 120px); /* Cria 4 colunas de 120px cada */
+            grid-gap: 15px; /* Espaço entre os cards */
+            justify-content: center; /* Centraliza os cards */
+            margin: 0 auto 30px; /* Centraliza o tabuleiro e dá espaçamento abaixo */
+        }
+
+        /* Estilo para cada card do jogo */
+        .card {
+            width: 120px;
+            height: 120px;
+            background-color: #fff; /* Cor de fundo branca */
+            border: 2px solid #ddd; /* Borda leve */
+            border-radius: 12px; /* Bordas arredondadas para um visual mais suave */
+            display: flex;
+            align-items: center; /* Centraliza o conteúdo dentro do card */
+            justify-content: center; /* Centraliza o conteúdo dentro do card */
+            font-size: 36px; /* Tamanho grande para o ícone ou letra */
+            cursor: pointer; /* Mudando o cursor para indicar que o card é clicável */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Sombra suave para dar profundidade */
+            transition: transform 0.3s ease, background-color 0.3s ease, box-shadow 0.3s ease; /* Transições suaves quando o card é virado */
+        }
+
+        /* Efeito de hover no card (quando o mouse passa por cima) */
+        .card:hover {
+            transform: scale(1.05); /* Aumenta um pouco o tamanho do card */
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2); /* Aumenta a sombra */
+        }
+
+        /* Estilo quando o card é virado */
+        .card.flipped {
+            background-color: #4caf50; /* Cor vibrante quando o card é virado */
+            color: white; /* A cor do texto fica branca */
+            transform: rotateY(180deg); /* Rotaciona o card para indicar que foi virado */
+        }
+
+        /* Estilo quando o card é combinado (jogo) */
+        .card.matched {
+            background-color: #2196F3; /* Azul para os cards que foram combinados */
+            color: white; /* Cor do texto em branco */
+            pointer-events: none; /* Impede que o card seja clicado novamente */
+        }
+
+        /* Estilo para o botão de reiniciar o jogo */
+        .reset-btn {
+            margin-top: 30px; /* Espaço acima do botão */
+            padding: 15px 30px; /* Tamanho do botão */
+            font-size: 1.2rem; /* Tamanho do texto no botão */
+            color: #fff; /* Texto branco */
+            background-color: #ff5722; /* Cor vibrante para o botão */
+            border: none; /* Remove a borda padrão */
+            border-radius: 25px; /* Bordas arredondadas para o botão */
+            cursor: pointer; /* Indica que o botão é clicável */
+            transition: background-color 0.3s ease, transform 0.3s ease; /* Transição suave para efeitos de hover */
+        }
+
+        /* Efeito de hover no botão (quando o mouse passa por cima) */
+        .reset-btn:hover {
+            background-color: #e64a19; /* Cor mais escura ao passar o mouse */
+            transform: scale(1.05); /* Aumenta o botão levemente */
+        }
+
+        /* Efeito de transição para o tempo e movimentos */
+        .stats p span {
+            font-weight: bold; /* Deixa os números em negrito */
+            color: #ff5722; /* Cor vibrante para os números */
+        }
+    </style>
+</head>
+<body>
+    <img src="saladamista.png" alt="Logo do Jogo" class="logo">
+    <div class="stats">
+        <p>Tempo: <span id="timer">0</span> segundos</p>
+        <p>Movimentos: <span id="moves">0</span></p>
+    </div>
+    <div class="game-board"></div>
+    <button class="reset-btn" onclick="resetGame()">Reiniciar Jogo</button>
+
+    <script>
+        let gameBoard, timerDisplay, movesDisplay, timer, time, moves, flippedCards, matchedPairs, cards;
+        const symbols = ["🍎", "🍌", "🍇", "🍒", "🍓", "🍍", "🥑", "🥕"];
+
+        document.addEventListener("DOMContentLoaded", initializeGame);
+
+        // Função que inicializa o jogo
+        function initializeGame() {
+            gameBoard = document.querySelector(".game-board");
+            timerDisplay = document.getElementById("timer");
+            movesDisplay = document.getElementById("moves");
+            resetGame(); // Chama a função de reiniciar o jogo
+        }
+
+        // Função que reinicia o jogo
+        function resetGame() {
+            clearInterval(timer); // Para o temporizador se já houver um ativo
+            timer = null;
+            time = 0; // Reinicia o tempo
+            moves = 0; // Reinicia os movimentos
+            flippedCards = []; // Reinicia a lista de cards virados
+            matchedPairs = 0; // Reinicia a contagem de pares combinados
+            timerDisplay.textContent = time; // Atualiza o tempo no display
+            movesDisplay.textContent = moves; // Atualiza os movimentos no display
+            gameBoard.innerHTML = ""; // Limpa o tabuleiro de jogo
+            cards = [...symbols, ...symbols]; // Cria um array com as figuras duplicadas para o jogo
+            cards.sort(() => Math.random() - 0.5); // Embaralha as figuras para que apareçam aleatoriamente
+
+            // Cria os cards no tabuleiro
+            cards.forEach(symbol => {
+                const card = document.createElement("div");
+                card.classList.add("card"); // Adiciona a classe de card
+                card.dataset.symbol = symbol; // Define a figura do card
+                card.addEventListener("click", flipCard); // Adiciona um ouvinte de evento para virar o card
+                gameBoard.appendChild(card); // Adiciona o card no tabuleiro
+            });
+
+            startTimer(); // Inicia o temporizador
+        }
+
+        // Função que inicia o temporizador
+        function startTimer() {
+            if (timer === null) {
+                timer = setInterval(() => {
+                    time++; // Aumenta o tempo
+                    timerDisplay.textContent = time; // Atualiza o display de tempo
+                }, 1000); // Atualiza a cada 1 segundo
+            }
+        }
+
+        // Função que vira o card
+        function flipCard() {
+            if (flippedCards.length < 2 && !this.classList.contains("flipped") && !this.classList.contains("matched")) {
+                if (moves === 0) startTimer(); // Começa o temporizador se for o primeiro movimento
+
+                this.classList.add("flipped"); // Adiciona a classe "flipped" ao card
+                this.textContent = this.dataset.symbol; // Mostra o símbolo do card
+                flippedCards.push(this); // Adiciona o card virado na lista de cards virados
+            }
+
+            if (flippedCards.length === 2) { // Quando dois cards são virados
+                moves++; // Aumenta os movimentos
+                movesDisplay.textContent = moves; // Atualiza os movimentos no display
+                setTimeout(checkMatch, 800); // Verifica se os dois cards combinam após um pequeno atraso
+            }
+        }
+
+        // Função que checa se os dois cards virados combinam
+        function checkMatch() {
+            if (flippedCards[0].dataset.symbol === flippedCards[1].dataset.symbol) {
+                flippedCards.forEach(card => card.classList.add("matched")); // Marca os cards como combinados
+                matchedPairs++; // Aumenta o número de pares combinados
+                if (matchedPairs === symbols.length) {
+                    clearInterval(timer); // Para o temporizador quando todos os pares forem combinados
+                    setTimeout(() => alert(`Parabéns! Você venceu em ${time} segundos com ${moves} movimentos!`), 300); // Exibe uma mensagem de vitória
+                }
+            } else {
+                flippedCards.forEach(card => {
+                    card.classList.remove("flipped"); // Vira os cards novamente
+                    card.textContent = ""; // Limpa o conteúdo do card
+                });
+            }
+            flippedCards = []; // Limpa a lista de cards virados
+        }
+    </script>
+</body>
+</html>
