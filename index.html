@@ -211,41 +211,51 @@
 
         // Função que vira o card
         function flipCard() {
+            // Verifica se menos de duas cartas estão viradas e se a carta clicada não está virada ou já combinada
             if (flippedCards.length < 2 && !this.classList.contains("flipped") && !this.classList.contains("matched")) {
-                if (moves === 0) startTimer(); // Começa o temporizador se for o primeiro movimento
+                // Adiciona a classe "flipped" para indicar que a carta foi virada
+                this.classList.add("flipped");
+                // Define o símbolo da carta para torná-lo visível
+                this.textContent = this.dataset.symbol;
+                // Adiciona a carta ao array de cartas viradas
+                flippedCards.push(this);
 
-                this.classList.add("flipped"); // Adiciona a classe "flipped" ao card
-                this.textContent = this.dataset.symbol; // Mostra o símbolo do card
-                flippedCards.push(this); // Adiciona o card virado na lista de cards virados
-            }
-
-            if (flippedCards.length === 2) {
-                moves++; // Aumenta o número de movimentos
-                movesDisplay.textContent = moves; // Atualiza o display de movimentos
-                checkMatch(); // Verifica se os cards virados são iguais
-            }
-        }
-
-        // Função que verifica se os dois cards virados são iguais
-        function checkMatch() {
-            if (flippedCards[0].dataset.symbol === flippedCards[1].dataset.symbol) {
-                flippedCards[0].classList.add("matched"); // Marca o primeiro card como combinado
-                flippedCards[1].classList.add("matched"); // Marca o segundo card como combinado
-                matchedPairs++; // Aumenta o número de pares combinados
-
-                if (matchedPairs === symbols.length) {
-                    clearInterval(timer); // Para o temporizador quando todos os pares forem combinados
-                    setTimeout(() => alert(`Você venceu! Tempo: ${time}s, Movimentos: ${moves}`), 500);
+                // Se duas cartas foram viradas, incrementa o número de jogadas e verifica se são um par
+                if (flippedCards.length === 2) {
+                    moves++; // Conta o número de movimentos
+                    movesDisplay.textContent = moves; // Atualiza a exibição de jogadas
+                    checkForMatch(); // Chama a função que verifica se há uma correspondência
                 }
-            } else {
-                setTimeout(() => {
-                    flippedCards[0].classList.remove("flipped"); // Vira o primeiro card de volta
-                    flippedCards[1].classList.remove("flipped"); // Vira o segundo card de volta
-                }, 1000);
             }
-
-            flippedCards = []; // Limpa a lista de cards virados
         }
+
+        function checkForMatch() {
+            // Obtém as duas cartas viradas do array flippedCards
+            let [card1, card2] = flippedCards;
+            
+            // Verifica se as cartas têm o mesmo símbolo
+            if (card1.dataset.symbol === card2.dataset.symbol) {
+                // Se forem iguais, adiciona a classe "matched" para indicar que foram combinadas
+                card1.classList.add("matched");
+                card2.classList.add("matched");
+                // Incrementa o contador de pares encontrados
+                matchedPairs++;
+                // Esvazia o array flippedCards para permitir a próxima jogada
+                flippedCards = [];
+            } else {
+                // Se não forem iguais, aguarda 1 segundo e então as vira de volta
+                setTimeout(() => {
+                    card1.classList.remove("flipped");
+                    card2.classList.remove("flipped");
+                    // Remove o símbolo para ocultar a carta novamente
+                    card1.textContent = "";
+                    card2.textContent = "";
+                    // Esvazia o array flippedCards para permitir a próxima jogada
+                    flippedCards = [];
+                }, 1000); // Dá um tempo para o jogador memorizar as cartas antes de desvirá-las
+            }
+        }
+
     </script>
 </body>
 </html>
